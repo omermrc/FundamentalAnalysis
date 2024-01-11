@@ -6,7 +6,7 @@ import sys
 
 #deleting all the existing files
 
-folder = '/Users/omermrc/Desktop/Hedgeblue/Python Projects/stocks-analysis/fundamental_analysis/out/info'
+folder = 'out/info'
 for filename in os.listdir(folder):
     file_path = os.path.join(folder, filename)
     try:
@@ -20,7 +20,7 @@ for filename in os.listdir(folder):
 
 
 # Read the CSV file and select columns 0 and 2
-df = pd.read_csv("/Users/omermrc/Desktop/Hedgeblue/Python Projects/stocks-analysis/fundamental_analysis/iShares-Russell-3000-ETF_fund.csv", usecols=[0, 2])
+df = pd.read_csv("iShares-Russell-3000-ETF_fund.csv", usecols=[0, 2])
 
 # Extract the unique sectors from the selected columns
 unique_sectors = df.iloc[:, 1].unique()
@@ -45,7 +45,7 @@ selected_symbols=selected_symbols[:10]
 SYMBOLS = selected_symbols
 
 # Directory path to save JSON files
-OUTPUT_DIRECTORY = '/Users/omermrc/Desktop/Hedgeblue/Python Projects/stocks-analysis/fundamental_analysis/out/info'
+OUTPUT_DIRECTORY = 'out/info'
 
 # Ensure the directory exists, create if not1
 
