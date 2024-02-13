@@ -1,8 +1,8 @@
 ### USER GUIDE 
-#### 1-In order to run program on streamlit you can use Streamlitformat.py file 
-#### 2-Streamlitdemo.py file is for making configurations for programme
-##### 3- You must rearrange Yfinance3 in order to succesfully run the program ( USER_AGENT arrangement is needed)
-###### 4- You can run the program by entering the terminal: "streamlit run streamlitformat.py"
+### 1-In order to run program on streamlit you can use Streamlitformat.py file 
+### 2-Streamlitdemo.py file is for making configurations for programme
+### 3- You must rearrange Yfinance3 in order to succesfully run the program ( USER_AGENT arrangement is needed)
+### 4- You can run the program by entering the terminal: "streamlit run streamlitformat.py"
 
 
 
