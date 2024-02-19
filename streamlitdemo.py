@@ -5,6 +5,7 @@ from yfinance3 import YFinance3
 # For DataFrame
 import pandas as pd
 import numpy as np
+import datetime
 
 
 
@@ -112,13 +113,12 @@ data = {
     'Price': [],
     '52w Low': [],
     '52w High': [],
-    'MarketCap': []
+    'MarketCap': [],
+    'Most Recent Quarter': [],
 
     }
 
 
-
-######  LOADS DATA FROM JSON FILES  #######
 
 def load_data(json_data):
     data['Symbol'].append(json_data.get('symbol', np.nan))
@@ -126,7 +126,15 @@ def load_data(json_data):
     data['Industry'].append(json_data.get('industry', np.nan))
     data['Price'].append(json_data.get('currentPrice', np.nan))
     data['MarketCap'].append(json_data.get('marketCap', np.nan))
-
+    
+    
+    # Convert Most Recent Quarter timestamp to a date object
+    most_recent_quarter = json_data.get('mostRecentQuarter', np.nan)
+    if most_recent_quarter:
+        most_recent_quarter_date = datetime.datetime.utcfromtimestamp(most_recent_quarter).date()
+    else:
+        most_recent_quarter_date = np.nan
+    data['Most Recent Quarter'].append(most_recent_quarter_date)
 
 
     # Handle missing keys gracefully
@@ -134,7 +142,7 @@ def load_data(json_data):
     data['P/E (fwd)'].append(json_data.get('forwardPE', np.nan))
     data['PEG'].append(json_data.get('pegRatio', np.nan))
 
-    if 'freeCashflow' in json_data and 'marketCap' in json_data:
+    if 'freeCashflow' in json_data and 'marketCap' in json_data :
         fcfy = (json_data['freeCashflow'] / json_data['marketCap']) * 100
         data['FCFY'].append(round(fcfy, 2))
     else:
@@ -227,6 +235,7 @@ def populate_tt(df, tt_data, col_name):
 
     # Get position based on the column name
     pos = df.columns.to_list().index(col_name)
+
     if col_name == 'MarketCap':
         stats = df[col_name].describe()
         for index, row in df.iterrows():
@@ -279,6 +288,7 @@ populate_tt(df, tt_data, 'DPR')
 populate_tt(df, tt_data, 'DY')
 populate_tt(df, tt_data, 'CR')
 populate_tt(df, tt_data, 'MarketCap')
+
 
 # Create a tool tip DF
 ttips = pd.DataFrame(data=tt_data, columns=df.columns, index=df.index)
