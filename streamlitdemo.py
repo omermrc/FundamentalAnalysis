@@ -66,7 +66,7 @@ if st.button("Selection", number):
                 # Write JSON data to file
                 with open(user_stock_filename, 'w') as file:
                     json.dump(data.info, file)
-                print(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
+                st.write(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
                 symbols_list.append(user_stock)
             else:
                 st.write(f"No data available for symbol '{user_stock}'.")
@@ -166,11 +166,11 @@ for symbol in SYMBOLS:
             # Use json.load() to parse the JSON data from the file
             load_data(json.load(file))
     except FileNotFoundError:
-        print(f"File '{file_name}' not found.")
+        st.write(f"File '{file_name}' not found. A new one will be created")
     except json.JSONDecodeError as e:
-        print(f"Error decoding JSON data: {e}")
+        st.write(f"Error decoding JSON data: {e}")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        st.write(f"An error occurred: {e}")
 
 
 
