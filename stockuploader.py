@@ -1,45 +1,39 @@
 import json
 import os
-from yfinance3 import YFinance3
 import pandas as pd
+from yfinance3 import YFinance3
 
-# Reading Russell 3000 CSV to identify stocks and their industry/sector
+# Read the CSV file and select columns 0 and 2
 df = pd.read_csv("iShares-Russell-3000-ETF_fund.csv", usecols=[0, 2])
 
-# Create a folder to store JSON files if it doesn't exist
-os.makedirs('json_list', exist_ok=True)
+# Filter out "Cash and/or Derivatives" sector
+df = df[df.iloc[:, 1] != "Cash and/or Derivatives"]
 
-# Filter out symbols categorized as "Cash and/or Derivatives"
-df = df[df['Sector'] != "Cash and/or Derivatives"]
+# Extract the unique sectors from the selected columns
+unique_sectors = df.iloc[:, 1].unique()
 
-# Get unique sectors
-unique_sectors = df['Sector'].unique()
+# Directory path to save JSON files
+OUTPUT_DIRECTORY = 'json_list'
 
-# Iterate over unique sectors
+# Ensure the directory exists, create if not
+os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
+
 for sector in unique_sectors:
-    # Filter symbols for the current sector and get top 10 symbols
-    symbols_for_sector = df[df['Sector'] == sector]['Ticker'].head(10).tolist()
-    
-    # Iterate over symbols for the current sector
-    for symbol in symbols_for_sector:
-        # Construct the file name for the JSON file
-        file_name = os.path.join('json_list', f'{symbol}.json')
+    selected_symbols = df[df.iloc[:, 1] == sector].iloc[:, 0].head(10).tolist()
 
-        # Check if the file already exists
-        if os.path.exists(file_name):
-            print(f"File '{file_name}' already exists. Skipping.")
-            continue
+    # Display the selected symbols
+    print(f"Stock symbols in the {sector} sector:")
+    print(selected_symbols[:10])  # Display the first 10 symbols
+    selected_symbols = selected_symbols[:10]
 
-        # Download JSON data for the symbol
+    SYMBOLS = selected_symbols
+
+    for symbol in SYMBOLS:
+        file_name = os.path.join(OUTPUT_DIRECTORY, f'{symbol}.json')
         data = YFinance3(symbol)
-
-        # Check if data is available
-        if data.info is None:
-            print(f"No data available for symbol '{symbol}'.")
-            continue
-
+        
         # Use a context manager to open the file and write the JSON data to it
         with open(file_name, 'w') as file:
             json.dump(data.info, file)
-
-        print(f"JSON data for symbol '{symbol}' saved to '{file_name}'.")
+        
+        print(f'Saved to {file_name}')
