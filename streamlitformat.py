@@ -15,8 +15,7 @@ st.title('Fundamental Stock Analysis Tool')
 # Reading Blackrock's İShares csv in order to identify the stocks and their industry/sector
 df = pd.read_csv("iShares-Russell-3000-ETF_fund.csv", usecols=[0, 2])
 unique_sectors = df.iloc[:, 1].unique()
-
-
+unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 
 
@@ -31,8 +30,10 @@ user_stocks = [ticker.strip() for ticker in user_input.split(',') if ticker.stri
 with st.sidebar:
     st.subheader("Available Sectors")
     for i, sector in enumerate(unique_sectors, 1):
-        if sector != "Cash and/or Derivatives":
-            st.write(f"{i}. {sector}")
+        
+        st.write(f"{i}. {sector}")
+            
+            
 
 
 # sector selection
