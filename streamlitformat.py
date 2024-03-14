@@ -5,6 +5,7 @@ from yfinance3 import YFinance3
 # For DataFrame
 import pandas as pd
 import numpy as np
+import datetime
 
 
 
@@ -113,7 +114,8 @@ data = {
     'Price': [],
     '52w Low': [],
     '52w High': [],
-    'MarketCap': []
+    'MarketCap': [],
+    'Most Recent Quarter': [],
 
     }
 
@@ -127,6 +129,14 @@ def load_data(json_data):
     data['Industry'].append(json_data.get('industry', np.nan))
     data['Price'].append(json_data.get('currentPrice', np.nan))
     data['MarketCap'].append(json_data.get('marketCap', np.nan))
+    
+    # Convert Most Recent Quarter timestamp to a date object
+    most_recent_quarter = json_data.get('mostRecentQuarter', np.nan)
+    if most_recent_quarter:
+        most_recent_quarter_date = datetime.datetime.utcfromtimestamp(most_recent_quarter).date()
+    else:
+        most_recent_quarter_date = np.nan
+    data['Most Recent Quarter'].append(most_recent_quarter_date)
 
 
 

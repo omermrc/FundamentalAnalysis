@@ -96,7 +96,7 @@ DATA_PATH = 'json_list'
 
 # Dictionary to collect data to create a DF later
 data = {
-    'Symbol': [],
+    'Symbol': [] ,
     'Name': [],
     'Industry': [],
     'EPS (fwd)': [],
@@ -115,6 +115,7 @@ data = {
     '52w High': [],
     'MarketCap': [],
     'Most Recent Quarter': [],
+    
 
     }
 
@@ -154,7 +155,7 @@ def load_data(json_data):
 
     data['DPR'].append(json_data.get('payoutRatio', np.nan) * 100)
 
-    data['DY'].append(json_data.get('dividendYield', 0.0))
+    data['DY'].append(json_data.get('dividendYield', np.nan) * 100)
     data['Beta'].append(json_data.get('beta', np.nan))
     data['CR'].append(json_data.get('currentRatio', np.nan))
 
@@ -227,6 +228,7 @@ def make_pretty(styler):
 
 ########  ADDS TOO TIPS ########
 def populate_tt(df, tt_data, col_name):
+
     stats = df[col_name].describe()
     
     per25 = round(stats.loc['25%'], 2)
@@ -275,6 +277,9 @@ def populate_tt(df, tt_data, col_name):
 
 # Initialize tool tip data - each column is set to '' for each row
 tt_data = [['' for x in range(len(df.columns))] for y in range(len(df))]
+
+st.write("<style>td:hover::after {content: attr(title);}</style>", unsafe_allow_html=True)
+
 
 # Gather tool tip data for indicators
 populate_tt(df, tt_data, 'EPS (fwd)')
