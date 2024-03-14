@@ -293,11 +293,27 @@ populate_tt(df, tt_data, 'MarketCap')
 
 # Create a tool tip DF
 ttips = pd.DataFrame(data=tt_data, columns=df.columns, index=df.index)
+def highlight_user_stocks(data):
+    # Initialize a blank DataFrame to collect the style information
+    style_df = pd.DataFrame(index=data.index, columns=data.columns, dtype='object')
+    
+    # Iterate through the 'Symbol' column to find user-input stocks
+    for index, symbol in enumerate(data['Symbol']):
+        if symbol in user_stocks:
+            # If the symbol is a user-input stock, set the background color for the entire row
+            style_df.iloc[index] = 'background-color: rgba(173, 216, 230, 0.5)'
+    
+    return style_df
+
+
 
 #Add table caption and styles to DF
 df.style.pipe(make_pretty).set_caption('Fundamental Indicators').set_table_styles(
     [{'selector': 'th.col_heading', 'props': 'text-align: center'},
     {'selector': 'caption', 'props': [('text-align', 'center'),
                                        ('font-size', '11pt'), ('font-weight', 'bold')]}])
-styled_df = df.style.pipe(make_pretty)
+# Apply the highlighting function to the DataFrame styling
+styled_df = df.style.pipe(make_pretty).apply(highlight_user_stocks, axis=None)
+
+# Display the styled DataFrame
 st.dataframe(styled_df)
