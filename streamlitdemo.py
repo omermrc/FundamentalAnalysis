@@ -6,7 +6,7 @@ from yfinance3 import YFinance3
 import pandas as pd
 import numpy as np
 import datetime
-
+from datetime import timezone
 
 
 # Main title on streamlit page
@@ -16,8 +16,7 @@ st.title('Fundamental Stock Analysis Tool')
 # Reading Blackrock's İShares csv in order to identify the stocks and their industry/sector
 df = pd.read_csv("iShares-Russell-3000-ETF_fund.csv", usecols=[0, 2])
 unique_sectors = df.iloc[:, 1].unique()
-
-
+unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 
 
@@ -32,8 +31,10 @@ user_stocks = [ticker.strip() for ticker in user_input.split(',') if ticker.stri
 with st.sidebar:
     st.subheader("Available Sectors")
     for i, sector in enumerate(unique_sectors, 1):
-        if sector != "Cash and/or Derivatives":
-            st.write(f"{i}. {sector}")
+        
+        st.write(f"{i}. {sector}")
+            
+            
 
 
 # sector selection
@@ -67,7 +68,7 @@ if st.button("Selection", number):
                 # Write JSON data to file
                 with open(user_stock_filename, 'w') as file:
                     json.dump(data.info, file)
-                st.write(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
+                print(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
                 symbols_list.append(user_stock)
             else:
                 st.write(f"No data available for symbol '{user_stock}'.")
@@ -96,7 +97,7 @@ DATA_PATH = 'json_list'
 
 # Dictionary to collect data to create a DF later
 data = {
-    'Symbol': [] ,
+    'Symbol': [],
     'Name': [],
     'Industry': [],
     'EPS (fwd)': [],
@@ -115,11 +116,12 @@ data = {
     '52w High': [],
     'MarketCap': [],
     'Most Recent Quarter': [],
-    
 
     }
 
 
+
+######  LOADS DATA FROM JSON FILES  #######
 
 def load_data(json_data):
     data['Symbol'].append(json_data.get('symbol', np.nan))
@@ -128,14 +130,15 @@ def load_data(json_data):
     data['Price'].append(json_data.get('currentPrice', np.nan))
     data['MarketCap'].append(json_data.get('marketCap', np.nan))
     
-    
-    # Convert Most Recent Quarter timestamp to a date object
+     # Convert Most Recent Quarter timestamp to a date object
     most_recent_quarter = json_data.get('mostRecentQuarter', np.nan)
     if most_recent_quarter:
-        most_recent_quarter_date = datetime.datetime.utcfromtimestamp(most_recent_quarter).date()
+        # Use datetime.fromtimestamp with the timezone specified
+        most_recent_quarter_date = datetime.datetime.fromtimestamp(most_recent_quarter, tz=timezone.utc).date()
     else:
         most_recent_quarter_date = np.nan
     data['Most Recent Quarter'].append(most_recent_quarter_date)
+
 
 
     # Handle missing keys gracefully
@@ -143,7 +146,7 @@ def load_data(json_data):
     data['P/E (fwd)'].append(json_data.get('forwardPE', np.nan))
     data['PEG'].append(json_data.get('pegRatio', np.nan))
 
-    if 'freeCashflow' in json_data and 'marketCap' in json_data :
+    if 'freeCashflow' in json_data and 'marketCap' in json_data:
         fcfy = (json_data['freeCashflow'] / json_data['marketCap']) * 100
         data['FCFY'].append(round(fcfy, 2))
     else:
@@ -155,7 +158,7 @@ def load_data(json_data):
 
     data['DPR'].append(json_data.get('payoutRatio', np.nan) * 100)
 
-    data['DY'].append(json_data.get('dividendYield', np.nan) * 100)
+    data['DY'].append(json_data.get('dividendYield', 0.0))
     data['Beta'].append(json_data.get('beta', np.nan))
     data['CR'].append(json_data.get('currentRatio', np.nan))
 
@@ -175,16 +178,26 @@ for symbol in SYMBOLS:
             # Use json.load() to parse the JSON data from the file
             load_data(json.load(file))
     except FileNotFoundError:
-        st.write(f"File '{file_name}' not found. A new one will be created")
+        print(f"File '{file_name}' not found.")
     except json.JSONDecodeError as e:
-        st.write(f"Error decoding JSON data: {e}")
+        print(f"Error decoding JSON data: {e}")
     except Exception as e:
-        st.write(f"An error occurred: {e}")
+        print(f"An error occurred: {e}")
 
 
 
 ########  CREATE DF  ###########
+# Debug: Print the length of each list in the dictionary
+for key, value in data.items():
+    print(f"Length of {key}: {len(value)}")
 
+# Check and append np.nan if any list is shorter than the others
+max_length = max(len(v) for v in data.values())
+for key, value in data.items():
+    while len(value) < max_length:
+        data[key].append(np.nan)  # Append np.nan or a suitable default value
+
+########  CREATE DF  ###########
 # Create a DF using the dictionary
 df = pd.DataFrame(data)
 
@@ -228,7 +241,6 @@ def make_pretty(styler):
 
 ########  ADDS TOO TIPS ########
 def populate_tt(df, tt_data, col_name):
-
     stats = df[col_name].describe()
     
     per25 = round(stats.loc['25%'], 2)
@@ -237,7 +249,6 @@ def populate_tt(df, tt_data, col_name):
 
     # Get position based on the column name
     pos = df.columns.to_list().index(col_name)
-
     if col_name == 'MarketCap':
         stats = df[col_name].describe()
         for index, row in df.iterrows():
@@ -278,9 +289,6 @@ def populate_tt(df, tt_data, col_name):
 # Initialize tool tip data - each column is set to '' for each row
 tt_data = [['' for x in range(len(df.columns))] for y in range(len(df))]
 
-st.write("<style>td:hover::after {content: attr(title);}</style>", unsafe_allow_html=True)
-
-
 # Gather tool tip data for indicators
 populate_tt(df, tt_data, 'EPS (fwd)')
 populate_tt(df, tt_data, 'P/E (fwd)')
@@ -294,14 +302,29 @@ populate_tt(df, tt_data, 'DY')
 populate_tt(df, tt_data, 'CR')
 populate_tt(df, tt_data, 'MarketCap')
 
-
 # Create a tool tip DF
 ttips = pd.DataFrame(data=tt_data, columns=df.columns, index=df.index)
+def highlight_user_stocks(data):
+    # Initialize a blank DataFrame to collect the style information
+    style_df = pd.DataFrame(index=data.index, columns=data.columns, dtype='object')
+    
+    # Iterate through the 'Symbol' column to find user-input stocks
+    for index, symbol in enumerate(data['Symbol']):
+        if symbol in user_stocks:
+            # If the symbol is a user-input stock, set the background color for the entire row
+            style_df.iloc[index] = 'background-color: rgba(173, 216, 230, 0.5)'
+    
+    return style_df
+
+
 
 #Add table caption and styles to DF
 df.style.pipe(make_pretty).set_caption('Fundamental Indicators').set_table_styles(
     [{'selector': 'th.col_heading', 'props': 'text-align: center'},
     {'selector': 'caption', 'props': [('text-align', 'center'),
                                        ('font-size', '11pt'), ('font-weight', 'bold')]}])
-styled_df = df.style.pipe(make_pretty)
+# Apply the highlighting function to the DataFrame styling
+styled_df = df.style.pipe(make_pretty).apply(highlight_user_stocks, axis=None)
+
+# Display the styled DataFrame
 st.dataframe(styled_df)

@@ -43,8 +43,8 @@ def create_json_files():
             print(f'Saved to {file_name}')
 
 # Schedule deletion and creation of JSON files
-schedule.every().sunday.at("22:00").do(delete_json_files)
-schedule.every().sunday.at("22:05").do(create_json_files)
+schedule.every().sunday.at("14:37").do(delete_json_files)
+schedule.every().sunday.at("14:38").do(create_json_files)
 
 while True:
     schedule.run_pending()

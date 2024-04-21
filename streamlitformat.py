@@ -6,7 +6,7 @@ from yfinance3 import YFinance3
 import pandas as pd
 import numpy as np
 import datetime
-
+from datetime import timezone
 
 
 # Main title on streamlit page
@@ -130,10 +130,11 @@ def load_data(json_data):
     data['Price'].append(json_data.get('currentPrice', np.nan))
     data['MarketCap'].append(json_data.get('marketCap', np.nan))
     
-    # Convert Most Recent Quarter timestamp to a date object
+     # Convert Most Recent Quarter timestamp to a date object
     most_recent_quarter = json_data.get('mostRecentQuarter', np.nan)
     if most_recent_quarter:
-        most_recent_quarter_date = datetime.datetime.utcfromtimestamp(most_recent_quarter).date()
+        # Use datetime.fromtimestamp with the timezone specified
+        most_recent_quarter_date = datetime.datetime.fromtimestamp(most_recent_quarter, tz=timezone.utc).date()
     else:
         most_recent_quarter_date = np.nan
     data['Most Recent Quarter'].append(most_recent_quarter_date)
@@ -186,7 +187,17 @@ for symbol in SYMBOLS:
 
 
 ########  CREATE DF  ###########
+# Debug: Print the length of each list in the dictionary
+for key, value in data.items():
+    print(f"Length of {key}: {len(value)}")
 
+# Check and append np.nan if any list is shorter than the others
+max_length = max(len(v) for v in data.values())
+for key, value in data.items():
+    while len(value) < max_length:
+        data[key].append(np.nan)  # Append np.nan or a suitable default value
+
+########  CREATE DF  ###########
 # Create a DF using the dictionary
 df = pd.DataFrame(data)
 
