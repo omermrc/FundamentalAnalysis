@@ -21,8 +21,7 @@ unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 
 # User preferred stocks
-st.subheader("User Preferred Stocks (Enter multiple tickers separated by comma)")
-user_input = st.text_input("Enter Stock Tickers")
+user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
 
 # Extract individual stock tickers from the comma-separated input
 user_stocks = [ticker.strip() for ticker in user_input.split(',') if ticker.strip()]
@@ -38,7 +37,7 @@ with st.sidebar:
 
 
 # sector selection
-number = st.number_input("Enter the index of the sector of interest: ", step=1, min_value=1, max_value=13)
+number = st.number_input("Enter the index of the sector of interest: ", step=1, min_value=1, max_value=11)
 selected_sector = unique_sectors[number - 1]
 
 # defined symbols of stocks of the sector selection
@@ -200,7 +199,11 @@ for key, value in data.items():
 ########  CREATE DF  ###########
 # Create a DF using the dictionary
 df = pd.DataFrame(data)
+# Drop rows where 'Name' column is None or NaN
 
+
+# Drop duplicates based on the 'Symbol' column
+df = df.drop_duplicates(subset='Name', keep='first')
 
 
 

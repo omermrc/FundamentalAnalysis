@@ -20,12 +20,14 @@ unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 
 
-# User preferred stocks
-st.subheader("User Preferred Stocks (Enter multiple tickers separated by comma)")
-user_input = st.text_input("Enter Stock Tickers")
+import streamlit as st
 
-# Extract individual stock tickers from the comma-separated input
-user_stocks = [ticker.strip() for ticker in user_input.split(',') if ticker.strip()]
+# User preferred stocks
+user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
+
+# Extract individual stock tickers from the comma-separated input and capitalize them
+user_stocks = [ticker.strip().upper() for ticker in user_input.split(',') if ticker.strip()]
+
 
 # Display the available sectors
 with st.sidebar:
@@ -38,22 +40,22 @@ with st.sidebar:
 
 
 # sector selection
-number = st.number_input("Enter the index of the sector of interest: ", step=1, min_value=1, max_value=13)
+number = st.number_input("Enter the index of the sector of interest: ", step=1, min_value=1, max_value=11)
 selected_sector = unique_sectors[number - 1]
 
 # defined symbols of stocks of the sector selection
 selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).tolist()
 
 # displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
-st.write(f"Stock symbols in the {selected_sector} sector:")
+#st.write(f"Stock symbols in the {selected_sector} sector:")
 
-with st.container():
-    st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
+#with st.container():
+    #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
 
 # Combine selected symbols and user-inputted symbols
 symbols_list = list(set(selected_symbols + user_stocks))
 
-if st.button("Selection", number):
+if st.button("Add Selected Symbols", number):
     folder = 'json_list'
     sector_folder = os.path.join(folder, selected_sector)
         # Check if the user input symbols exist as JSON files
@@ -100,6 +102,7 @@ data = {
     'Symbol': [],
     'Name': [],
     'Industry': [],
+    'Most Recent Quarter': [],
     'EPS (fwd)': [],
     'P/E (fwd)': [],
     'PEG': [],
@@ -115,7 +118,7 @@ data = {
     '52w Low': [],
     '52w High': [],
     'MarketCap': [],
-    'Most Recent Quarter': [],
+    
 
     }
 
@@ -201,7 +204,7 @@ for key, value in data.items():
 # Create a DF using the dictionary
 df = pd.DataFrame(data)
 
-
+df = df.drop_duplicates(subset='Name', keep='first')
 
 
 # Add 52 week price range
