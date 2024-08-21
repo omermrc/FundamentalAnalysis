@@ -20,11 +20,14 @@ unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 
 
+import streamlit as st
+
 # User preferred stocks
 user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
 
-# Extract individual stock tickers from the comma-separated input
-user_stocks = [ticker.strip() for ticker in user_input.split(',') if ticker.strip()]
+# Extract individual stock tickers from the comma-separated input and capitalize them
+user_stocks = [ticker.strip().upper() for ticker in user_input.split(',') if ticker.strip()]
+
 
 # Display the available sectors
 with st.sidebar:
@@ -44,15 +47,15 @@ selected_sector = unique_sectors[number - 1]
 selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).tolist()
 
 # displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
-st.write(f"Stock symbols in the {selected_sector} sector:")
+#st.write(f"Stock symbols in the {selected_sector} sector:")
 
-with st.container():
-    st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
+#with st.container():
+    #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
 
 # Combine selected symbols and user-inputted symbols
 symbols_list = list(set(selected_symbols + user_stocks))
 
-if st.button("Selection", number):
+if st.button("Add Selected Symbols", number):
     folder = 'json_list'
     sector_folder = os.path.join(folder, selected_sector)
         # Check if the user input symbols exist as JSON files
@@ -99,6 +102,7 @@ data = {
     'Symbol': [],
     'Name': [],
     'Industry': [],
+    'Most Recent Quarter': [],
     'EPS (fwd)': [],
     'P/E (fwd)': [],
     'PEG': [],
@@ -114,7 +118,7 @@ data = {
     '52w Low': [],
     '52w High': [],
     'MarketCap': [],
-    'Most Recent Quarter': [],
+    
 
     }
 
@@ -199,12 +203,8 @@ for key, value in data.items():
 ########  CREATE DF  ###########
 # Create a DF using the dictionary
 df = pd.DataFrame(data)
-# Drop rows where 'Name' column is None or NaN
 
-
-# Drop duplicates based on the 'Symbol' column
 df = df.drop_duplicates(subset='Name', keep='first')
-
 
 
 # Add 52 week price range
