@@ -124,7 +124,7 @@ data = {
 
     }
 
-
+st.set_page_config(layout="wide")
 
 ######  LOADS DATA FROM JSON FILES  #######
 
