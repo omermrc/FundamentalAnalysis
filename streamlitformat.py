@@ -10,7 +10,7 @@ from datetime import timezone
 import matplotlib
 
  
-
+st.set_page_config(layout="wide")
 # Main title on streamlit page
 st.title('Fundamental Stock Analysis Tool')
 
@@ -124,7 +124,7 @@ data = {
 
     }
 
-st.set_page_config(layout="wide")
+
 
 ######  LOADS DATA FROM JSON FILES  #######
 
