@@ -56,12 +56,7 @@ selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).toli
     #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
 
 # Combine selected symbols and user-inputted symbols
-# User preferred stocks
-user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
 
-
-# Extract individual stock tickers from the comma-separated input and capitalize them
-user_stocks = [ticker.strip().upper() for ticker in user_input.split(',') if ticker.strip()]
 symbols_list = list(set(selected_symbols + user_stocks))
 
 if st.button("Add Selected Symbols", number):
