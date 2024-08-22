@@ -7,8 +7,9 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import timezone
- 
+import matplotlib
 
+ 
 
 # Main title on streamlit page
 st.title('Fundamental Stock Analysis Tool')
