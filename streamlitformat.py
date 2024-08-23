@@ -40,13 +40,13 @@ with st.sidebar:
     selected_sector = st.radio("Select a sector:", unique_sectors)
 
 # defined symbols of stocks of the selected sector
-selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).tolist()
+selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].tolist()
 
 
 
 
 # displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
-#st.write(f"Stock symbols in the {selected_sector} sector:")
+st.write(f"Stock symbols in the {selected_sector} sector:")
 
 #with st.container():
     #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
@@ -102,7 +102,7 @@ data = {
     'Symbol': [],
     'Name': [],
     'Industry': [],
-    'Most Recent Quarter': [],
+    'Most Recent Report': [],
     'EPS (fwd)': [],
     'P/E (fwd)': [],
     'PEG': [],
@@ -133,14 +133,14 @@ def load_data(json_data):
     data['Price'].append(json_data.get('currentPrice', np.nan))
     data['MarketCap'].append(json_data.get('marketCap', np.nan))
     
-     # Convert Most Recent Quarter timestamp to a date object
+     # Convert Most Recent Report timestamp to a date object
     most_recent_quarter = json_data.get('mostRecentQuarter', np.nan)
     if most_recent_quarter:
         # Use datetime.fromtimestamp with the timezone specified
         most_recent_quarter_date = datetime.datetime.fromtimestamp(most_recent_quarter, tz=timezone.utc).date()
     else:
         most_recent_quarter_date = np.nan
-    data['Most Recent Quarter'].append(most_recent_quarter_date)
+    data['Most Recent Report'].append(most_recent_quarter_date)
 
 
 

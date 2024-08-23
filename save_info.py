@@ -30,21 +30,65 @@ def delete_json_files():
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
 
-# Function to create JSON files
 def create_json_files():
     for sector in unique_sectors:
-        selected_symbols = df[df.iloc[:, 1] == sector].iloc[:, 0].head(10).tolist()
-        for symbol in selected_symbols:
+        # Gather initial symbols to process
+        sector_df = df[df.iloc[:, 1] == sector]
+        selected_symbols = sector_df.iloc[:, 0].tolist()
+        
+        successful_symbols = []
+        failed_symbols = []
+        all_symbols = set(selected_symbols)
+        
+        # Process up to 10 symbols
+        while len(successful_symbols) < 10 and selected_symbols:
+            symbol = selected_symbols.pop(0)  # Get the next symbol
             file_name = os.path.join(OUTPUT_DIRECTORY, f'{symbol}.json')
-            data = YFinance3(symbol)
-            # Use a context manager to open the file and write the JSON data to it
-            with open(file_name, 'w') as file:
-                json.dump(data.info, file)
-            print(f'Saved to {file_name}')
+            try:
+                data = YFinance3(symbol)
+                info = data.info  # Access info as a property, not a method
+                if isinstance(info, dict):  # Check if info is a dictionary
+                    with open(file_name, 'w') as file:
+                        json.dump(info, file)
+                    print(f'Saved to {file_name}')
+                    successful_symbols.append(symbol)
+                else:
+                    print(f"No data available for symbol {symbol}")
+                    failed_symbols.append(symbol)
+            except Exception as e:
+                print(f"Error processing symbol {symbol}: {e}")
+                failed_symbols.append(symbol)
+        
+        # If fewer than 10 successful symbols, replace failed ones
+        if len(successful_symbols) < 10:
+            remaining_needed = 10 - len(successful_symbols)
+            additional_symbols = [s for s in all_symbols if s not in successful_symbols and s not in failed_symbols]
+            
+            # Re-attempt with remaining symbols if needed
+            while remaining_needed > 0 and additional_symbols:
+                symbol = additional_symbols.pop(0)
+                file_name = os.path.join(OUTPUT_DIRECTORY, f'{symbol}.json')
+                try:
+                    data = YFinance3(symbol)
+                    info = data.info
+                    if isinstance(info, dict):
+                        with open(file_name, 'w') as file:
+                            json.dump(info, file)
+                        print(f'Saved to {file_name}')
+                        successful_symbols.append(symbol)
+                        remaining_needed -= 1
+                except Exception as e:
+                    print(f"Error processing symbol {symbol}: {e}")
 
+        if len(successful_symbols) < 10:
+            print(f"Only {len(successful_symbols)} symbols processed for sector {sector}.")
+        else:
+            print(f"Successfully processed 10 symbols for sector {sector}.")
+delete_json_files()
+create_json_files()
 # Schedule deletion and creation of JSON files
-schedule.every().tuesday.at("14:31").do(delete_json_files)
-schedule.every().tuesday.at("14:32").do(create_json_files)
+schedule.every().friday.at("15:48").do(delete_json_files)
+schedule.every().friday.at("14:49").do(create_json_files)
 
 while True:
     schedule.run_pending()
