@@ -42,8 +42,7 @@ with st.sidebar:
 # defined symbols of stocks of the selected sector
 selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).tolist()
 
-# Display the selected symbols
-st.write("Selected Symbols:")
+
 
 
 # displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
