@@ -7,9 +7,7 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import timezone
-import matplotlib
 
- 
 st.set_page_config(layout="wide")
 # Main title on streamlit page
 st.title('Fundamental Stock Analysis Tool')
@@ -24,30 +22,29 @@ unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 import streamlit as st
 
-# User preferred stocks
-user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
+# User preferred stockss
+# Create a layout with a single column for the text input
+col1, col2 = st.columns([5, 5])  # Adjust proportions as needed
 
+# Place the text input in the first column
+with col1:
+    user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
 
 # Extract individual stock tickers from the comma-separated input and capitalize them
 user_stocks = [ticker.strip().upper() for ticker in user_input.split(',') if ticker.strip()]
 
 
-# Display the available sectors
+# Display the available sectors in the sidebar with radio buttons
 with st.sidebar:
     st.subheader("Available Sectors")
-    for i, sector in enumerate(unique_sectors, 1):
-        
-        st.write(f"{i}. {sector}")
-            
-            
+    selected_sector = st.radio("Select a sector:", unique_sectors)
 
-
-# sector selection
-number = st.number_input("Enter the index of the sector of interest: ", step=1, min_value=1, max_value=11)
-selected_sector = unique_sectors[number - 1]
-
-# defined symbols of stocks of the sector selection
+# defined symbols of stocks of the selected sector
 selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).tolist()
+
+# Display the selected symbols
+st.write("Selected Symbols:")
+
 
 # displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
 #st.write(f"Stock symbols in the {selected_sector} sector:")
@@ -56,10 +53,10 @@ selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].head(10).toli
     #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
 
 # Combine selected symbols and user-inputted symbols
-
 symbols_list = list(set(selected_symbols + user_stocks))
-
-if st.button("Add Selected Symbols", number):
+num_stocks = len(symbols_list)
+no_ofsymbols=len(symbols_list)
+if st.button("Add Selected Symbols", selected_sector):
     folder = 'json_list'
     sector_folder = os.path.join(folder, selected_sector)
         # Check if the user input symbols exist as JSON files
@@ -334,4 +331,9 @@ df.style.pipe(make_pretty).set_caption('Fundamental Indicators').set_table_style
 styled_df = df.style.pipe(make_pretty).apply(highlight_user_stocks, axis=None)
 
 # Display the styled DataFrame
-st.dataframe(styled_df)
+row_height = 39  # Adjust this value to control row height
+height = len(df) * row_height
+
+# Display the DataFrame with the calculated height
+st.dataframe(styled_df, height=height)
+
