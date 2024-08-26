@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import timezone
-
+import yfinance as yf
 st.set_page_config(layout="wide")
 # Main title on streamlit page
 st.title('Fundamental Stock Analysis Tool')
@@ -21,7 +21,26 @@ unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 
 import streamlit as st
+# Define a function to check if a stock ticker exists
+def is_valid_ticker(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        stock_info = stock.info
+        
+        # Debugging: Print stock_info to understand its structure
+        if stock_info is None:
+            print(f"Stock info for {ticker} is None")
+            return False
+        
+        print(f"Stock info for {ticker}: {stock_info}")
 
+        # Ensure stock_info is not None and check for a valid symbol
+        if 'symbol' in stock_info:
+            return stock_info['symbol'].upper() == ticker
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error fetching ticker {ticker}: {e}")
+    return False
 # User preferred stockss
 # Create a layout with a single column for the text input
 col1, col2 = st.columns([5, 5])  # Adjust proportions as needed
@@ -32,6 +51,16 @@ with col1:
 
 # Extract individual stock tickers from the comma-separated input and capitalize them
 user_stocks = [ticker.strip().upper() for ticker in user_input.split(',') if ticker.strip()]
+
+# Validate each ticker and identify invalid ones
+invalid_tickers = [ticker for ticker in user_stocks if not is_valid_ticker(ticker)]
+
+# Display validation messages
+if user_input:
+    if invalid_tickers:
+        st.warning(f"Please enter a valid symbol. Invalid tickers: {', '.join(invalid_tickers)}")
+    else:
+        st.success("All tickers are valid!")
 
 
 # Display the available sectors in the sidebar with radio buttons
@@ -55,6 +84,7 @@ st.write(f"Stock symbols in the {selected_sector} sector:")
 symbols_list = list(set(selected_symbols + user_stocks))
 num_stocks = len(symbols_list)
 no_ofsymbols=len(symbols_list)
+
 if st.button("Add Selected Symbols", selected_sector):
     folder = 'json_list'
     sector_folder = os.path.join(folder, selected_sector)

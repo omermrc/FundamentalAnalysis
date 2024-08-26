@@ -31,7 +31,7 @@ def delete_json_files():
         except Exception as e:
             print(f'Failed to delete {file_path}. Reason: {e}')
 
-def is_data_recent(info, days_threshold=180):
+def is_data_recent(info, days_threshold=300):
     """Check if the data is recent based on the most recent report date."""
     most_recent_quarter = info.get('mostRecentQuarter', None)
     if most_recent_quarter:
