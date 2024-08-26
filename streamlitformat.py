@@ -45,8 +45,6 @@ selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].tolist()
 
 
 
-# displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
-st.write(f"Stock symbols in the {selected_sector} sector:")
 
 #with st.container():
     #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
@@ -76,7 +74,7 @@ if st.button("Add Selected Symbols"):
                     # Write JSON data to file
                     with open(user_stock_filename, 'w') as file:
                         json.dump(data.info, file)
-                    st.write(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
+                    
                     symbols_list.append(user_stock)
                 else:
                     st.warning(f"No valid data available for symbol '{user_stock}'. Please check the ticker.")
@@ -86,7 +84,8 @@ if st.button("Add Selected Symbols"):
 
 
 
-
+# displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
+st.write(f"Stock symbols in the {selected_sector} sector:")
 
 
 
