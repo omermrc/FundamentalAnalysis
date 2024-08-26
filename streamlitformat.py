@@ -45,10 +45,6 @@ selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].tolist()
 
 
 
-
-#with st.container():
-    #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
-
 # Combine selected symbols and user-inputted symbols
 symbols_list = list(set(selected_symbols + user_stocks))
 num_stocks = len(symbols_list)
@@ -73,8 +69,7 @@ if st.button("Add Selected Symbols"):
                 if data and data.info:  # Check if data.info exists and is not None
                     # Write JSON data to file
                     with open(user_stock_filename, 'w') as file:
-                        json.dump(data.info, file)
-                    
+                        json.dump(data.info, file)                    
                     symbols_list.append(user_stock)
                 else:
                     st.warning(f"No valid data available for symbol '{user_stock}'. Please check the ticker.")
