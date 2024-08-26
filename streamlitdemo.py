@@ -26,7 +26,7 @@ import streamlit as st
 # Define a function to check if a stock ticker exists
 def is_valid_ticker(ticker):
     try:
-        stock = yf.Ticker(ticker)
+        stock = YFinance3(ticker)
         stock_info = stock.info
         
         # Debugging: Print stock_info to understand its structure
@@ -75,33 +75,32 @@ symbols_list = list(set(selected_symbols + user_stocks))
 num_stocks = len(symbols_list)
 no_ofsymbols = len(symbols_list)
 
-if st.button("Add Selected Symbols",selected_sector):
+if st.button("Add Selected Symbols"):
     folder = 'json_list'
-    
     if not os.path.exists(folder):
         os.makedirs(folder)
     
     for user_stock in user_stocks:
         user_stock_filename = os.path.join(folder, f'{user_stock}.json')
         
-        # Only attempt to fetch data if the ticker is valid
         if is_valid_ticker(user_stock):
             if not os.path.exists(user_stock_filename):
                 try:
                     # Fetch data for the symbol
-                    data = YFinance3.Ticker(user_stock).info
-
-                    # Check if data is available and valid
-                    if data:
+                    data = YFinance3(user_stock)
+                    
+                    # Ensure the data fetched is a dictionary or a JSON-serializable object
+                    if isinstance(data, dict):
                         # Write JSON data to file
                         with open(user_stock_filename, 'w') as file:
                             json.dump(data, file)
                         st.write(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
                     else:
-                        st.write(f"No valid data available for symbol '{user_stock}'.")
+                        st.write(f"Unexpected data format for symbol '{user_stock}'. Unable to save as JSON.")
                 except Exception as e:
                     st.error(f"Error fetching data for {user_stock}: {e}")
-
+        else:
+            st.warning(f"Invalid ticker: {user_stock}")
 
 
 

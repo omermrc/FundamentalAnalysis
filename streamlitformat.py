@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 import datetime
 from datetime import timezone
-import yfinance as yf
+
 st.set_page_config(layout="wide")
 # Main title on streamlit page
 st.title('Fundamental Stock Analysis Tool')
@@ -22,85 +22,75 @@ unique_sectors = unique_sectors[unique_sectors != "Cash and/or Derivatives"]
 
 import streamlit as st
 
-
-# Define a function to check if a stock ticker exists
-def is_valid_ticker(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        stock_info = stock.info
-        
-        # Debugging: Print stock_info to understand its structure
-        if stock_info is None:
-            print(f"Stock info for {ticker} is None")
-            return False
-        
-        print(f"Stock info for {ticker}: {stock_info}")
-
-        # Ensure stock_info is not None and check for a valid symbol
-        if 'symbol' in stock_info:
-            return stock_info['symbol'].upper() == ticker
-    except Exception as e:
-        # Log the error for debugging
-        print(f"Error fetching ticker {ticker}: {e}")
-    return False
-
-# Create layout with a single column for text input
+# User preferred stockss
+# Create a layout with a single column for the text input
 col1, col2 = st.columns([5, 5])  # Adjust proportions as needed
+
+# Place the text input in the first column
 with col1:
     user_input = st.text_input("User Preferred Stocks (Enter multiple tickers separated by comma)")
 
-# Extract and capitalize stock tickers from input
+# Extract individual stock tickers from the comma-separated input and capitalize them
 user_stocks = [ticker.strip().upper() for ticker in user_input.split(',') if ticker.strip()]
 
-# Validate each ticker and identify invalid ones
-invalid_tickers = [ticker for ticker in user_stocks if not is_valid_ticker(ticker)]
 
-# Display validation messages
-if user_input:
-    if invalid_tickers:
-        st.warning(f"Please enter a valid symbol. Invalid tickers: {', '.join(invalid_tickers)}")
-    else:
-        st.success("All tickers are valid!")
-
-# Display available sectors in the sidebar
+# Display the available sectors in the sidebar with radio buttons
 with st.sidebar:
     st.subheader("Available Sectors")
     selected_sector = st.radio("Select a sector:", unique_sectors)
 
-# Define symbols of stocks in the selected sector
+# defined symbols of stocks of the selected sector
 selected_symbols = df[df.iloc[:, 1] == selected_sector].iloc[:, 0].tolist()
+
+
+
+
+# displaying the results of the sector selection first the selected sector and the second list of the symbols of selected sector
+st.write(f"Stock symbols in the {selected_sector} sector:")
+
+#with st.container():
+    #st.write(pd.DataFrame(selected_symbols[:10], columns=['Symbols']))
 
 # Combine selected symbols and user-inputted symbols
 symbols_list = list(set(selected_symbols + user_stocks))
 num_stocks = len(symbols_list)
-no_ofsymbols = len(symbols_list)
-
-if st.button("Add Selected Symbols",selected_sector):
+no_ofsymbols=len(symbols_list)
+if st.button("Add Selected Symbols"):
     folder = 'json_list'
+    sector_folder = os.path.join(folder, selected_sector)
     
     if not os.path.exists(folder):
         os.makedirs(folder)
     
+    # Iterate through user input symbols to fetch and save data
     for user_stock in user_stocks:
         user_stock_filename = os.path.join(folder, f'{user_stock}.json')
-        
-        # Only attempt to fetch data if the ticker is valid
-        if is_valid_ticker(user_stock):
-            if not os.path.exists(user_stock_filename):
-                try:
-                    # Fetch data for the symbol
-                    data = YFinance3.Ticker(user_stock).info
 
-                    # Check if data is available and valid
-                    if data:
-                        # Write JSON data to file
-                        with open(user_stock_filename, 'w') as file:
-                            json.dump(data, file)
-                        st.write(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
-                    else:
-                        st.write(f"No valid data available for symbol '{user_stock}'.")
-                except Exception as e:
-                    st.error(f"Error fetching data for {user_stock}: {e}")
+        if not os.path.exists(user_stock_filename):
+            try:
+                # Fetch data for the symbol using YFinance3
+                data = YFinance3(user_stock)
+                
+                # Check if the data object has valid information
+                if data and data.info:  # Check if data.info exists and is not None
+                    # Write JSON data to file
+                    with open(user_stock_filename, 'w') as file:
+                        json.dump(data.info, file)
+                    st.write(f"JSON data for symbol '{user_stock}' saved to '{user_stock_filename}'.")
+                    symbols_list.append(user_stock)
+                else:
+                    st.warning(f"No valid data available for symbol '{user_stock}'. Please check the ticker.")
+            except Exception as e:
+                st.error(f"The symbol you typed is invalid: {user_stock}")
+
+
+
+
+
+
+
+
+
 
 
 
@@ -120,7 +110,7 @@ data = {
     'Symbol': [],
     'Name': [],
     'Industry': [],
-    'Most Recent Quarter': [],
+    'Most Recent Report': [],
     'EPS (fwd)': [],
     'P/E (fwd)': [],
     'PEG': [],
@@ -151,14 +141,14 @@ def load_data(json_data):
     data['Price'].append(json_data.get('currentPrice', np.nan))
     data['MarketCap'].append(json_data.get('marketCap', np.nan))
     
-     # Convert Most Recent Quarter timestamp to a date object
+     # Convert Most Recent Report timestamp to a date object
     most_recent_quarter = json_data.get('mostRecentQuarter', np.nan)
     if most_recent_quarter:
         # Use datetime.fromtimestamp with the timezone specified
         most_recent_quarter_date = datetime.datetime.fromtimestamp(most_recent_quarter, tz=timezone.utc).date()
     else:
         most_recent_quarter_date = np.nan
-    data['Most Recent Quarter'].append(most_recent_quarter_date)
+    data['Most Recent Report'].append(most_recent_quarter_date)
 
 
 
@@ -353,4 +343,3 @@ height = len(df) * row_height
 
 # Display the DataFrame with the calculated height
 st.dataframe(styled_df, height=height)
-
