@@ -163,7 +163,7 @@ def load_data(json_data):
 
     data['DPR'].append(json_data.get('payoutRatio', np.nan) * 100)
 
-    data['DY'].append(json_data.get('dividendYield', 0.0))
+    data['DY'].append(json_data.get('dividendYield', 0.0)*100)
     data['Beta'].append(json_data.get('beta', np.nan))
     data['CR'].append(json_data.get('currentRatio', np.nan))
 
